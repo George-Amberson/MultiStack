@@ -2,48 +2,44 @@
 #include <exception>
 
 using namespace std;
-
+template<class A1>
 struct LittleStack
 {
-	int first;
-	int last;
+	A1* ptr;
+	int DataCount;
+	int size;
+	bool HasFreeMemory(int count)
+	{
+		return((size-DataCount)>count);
+	}
 };
+
 template<class A1>
 class MultiStack
 {
 public:
-	MultiStack()
-	{
-		Array = nullptr;
-		StacksCount = 0;
-		StacksStartIndex = nullptr;
-		CeilsCount = 0;
-		DataCount = 0;
-	}
+	MultiStack():Array(0),StacksStartIndex(0),StacksCount(0),CeilsCount(0),DataCount(0){}
+
 	MultiStack(int _StackCount, int CeilCount)
 	{
-		if (_StackCount > CeilCount) throw logic_error("incorrect parametr");
-		if ((_StackCount <= 0) || (CeilCount <= 0)) throw logic_error("Incorect parametrs");
 		Array = new A1[CeilCount];
-		CeilsCount = CeilCount;
 		StacksCount = _StackCount;
-		StacksStartIndex = new LittleStack[_StackCount];
-		for (int i = 0; i < StacksCount; i++) StacksStartIndex[i] = { 0,0 };
+		CeilsCount = CeilCount;
+		stacs = new LittleStack<A1>[_StackCount];
 		DataCount = 0;
+		for (int i = 0; i < StacksCount; i++) stacs[i] = { Array + ((CeilsCount / StacksCount)*i),0,CeilsCount / StacksCount };
 	}
 
 	MultiStack(MultiStack& lhs)
 	{
-
-		Array = new A1[lhs.CeilsCount];
+		Array = new A1[lhs.CeilCount];
+		StacksCount = lhs.StackCount;
 		CeilsCount = lhs.CeilsCount;
-		for (int i = 0; i < lhs.CeilsCount; i++)Array[i] = lhs.Array[i];
-		StacksStartIndex = new LittleStack[lhs.StacksCount];
-		StacksCount = lhs.StacksCount;
-		for (int i = 0; i < lhs.StacksCount; i++) {
-			StacksStartIndex[i] = lhs.StacksStartIndex[i];
-		}
+		stacs = new LittleStack<A1>[lhs.StackCount];
 		DataCount = lhs.DataCount;
+		for (int i = 0; i < lhs.StacksCount; i++)
+		stacs[i] = { Array + ((CeilsCount / StacksCount)*i),0,CeilsCount / StacksCount };
+		
 	}
 	~MultiStack()
 	{
@@ -51,53 +47,73 @@ public:
 		{
 			delete[] Array;
 		}
-		if (StacksStartIndex != nullptr)
+		if (stacs != nullptr)
 		{
-			delete[] StacksStartIndex;
+			delete[] stacs;
 		}
 	}
 	bool IsFull()
 	{
-		return(DataCount == CeilsCount);
+		return(DataCount == StacksCount);
 	}
 	bool IsEmpty()
 	{
-		return (DataCount == 0);
+		return(DataCount == 0);
 	}
 	void push(A1& lhs, int StackNum)
 	{
-		if ((*this).IsFull()) throw logic_error("MultiStack is Full");
-		(*this).Shift(StackNum+1);
-		Array[StacksStartIndex[StackNum].last] = lhs;
-		StacksStartIndex[StackNum].last++;
-		DataCount++;
+		if (this->IsFull()) throw logic_error("Container is full");
+		if (stacs[StackNum].DataCount - stacs[StackNum].size != 0)
+		{
+			stacs[StackNum].ptr[DataCount] = lhs;
+			stacs[StackNum].DataCount++;
+			return;
+		}
+		int pushceil = (CeilsCount - DataCount) / StacksCount;
+		for (int i = 0; i < StacksCount; i++)
+		{
+			if (stacs[i].HasFreeMemory(pushceil))
+			{
+
+			}
+		}
+
 	}
 	
 	A1& pop(int StackNum)
 	{
-		if ((*this).IsEmpty()) throw logic_error("Multistack is empty");
-		if ((StacksStartIndex[StackNum].last - 1) < 0) throw logic_error("Stack is empty");
-		StacksStartIndex[StackNum].last--;
-		DataCount--;
-		return(Array[StacksStartIndex[StackNum].last]);
+		
 	}
-private:
-	void Shift(int index)
+	void ShiftLeft(int index, int count)
 	{
-		for (int i = StacksCount - 1; i >= index; i--)
+		for (int i = 0; i < count; i++)
 		{
-			for (int j = StacksStartIndex[i].last; j > StacksStartIndex[i].first; j--)
+			for (auto k = stacs[index].ptr - 1; k < (stacs[index].ptr + stacs[index].size-1); k++)
 			{
-				Array[j] = Array[j - 1];
+				(*k) = *(k + 1);
 			}
-			StacksStartIndex[i].last++;
-			StacksStartIndex[i].first++;
+			stacs[index].ptr = stacks.ptr - 1;
+			stacs[index].size++;
 		}
 	}
+	void ShiftRight(int index, int count)
+	{
+		for (int i = 0; i < count; i++)
+		{
+			for (auto j = stacs[index].ptr + stacs[index].size; j > stacs[index].ptr; j--)
+			{
+				*(j) = *(j - 1);
+			}
+			stacs[index].ptr++;
+			stacs[index].size--;
+		}
+		
+	}
+private:
 	A1* Array;
 	int StacksCount;
-	LittleStack* StacksStartIndex;
+	LittleStack<A1>* stacs;
 	int CeilsCount;
 	int DataCount;
-
 };
+
