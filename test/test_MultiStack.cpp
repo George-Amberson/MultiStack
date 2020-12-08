@@ -27,21 +27,21 @@ TEST(MultiStack, IsFull)
 	MultiStack<int>q(1,1);
 	int m = 2;
 	q.push(m,0);
-	EXPECT_EQ(q.IsFull(), 1);
+	EXPECT_EQ(q.is_full(), 1);
 }
 
-TEST(Queue, IsEmpty)
+TEST(MultiStack, IsEmpty)
 {
 	MultiStack<int>q(1,1);
 	int m = 2;
 	q.push(m,0);
 	q.pop(0);
-	EXPECT_EQ(q.IsEmpty(), 1);
+	EXPECT_EQ(q.is_empty(), 1);
 }
 
 TEST(MultiStack, can_work_with_two_stacks)
 {
-	MultiStack<int> v(2,5);
+	MultiStack<int> v(2,3);
 	int m = 3;
 	v.push(m, 0);
 	v.push(m, 0);
